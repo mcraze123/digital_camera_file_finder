@@ -8,6 +8,7 @@ import sys
 import re
 import shutil
 import getopt
+import cv2
 
 src_dir = ''
 dest_dir = ''
@@ -15,24 +16,46 @@ verbose = False
 match_all_images = False
 use_min_size = False
 min_size = 0
+face_detect = False
+pedestrian_detect = False
+casc_classifier = "haarcascade_frontalface_alt.xml"
+faces_directory = "faces"
 
 def usage(arg):
     print "DCIM Finder: "
     print "Finds most personal photo files recursively starting at source_dir,"
     print "and copies them to dest_dir."
     print
-    print "Usage: python %s -i <source_dir> -o <dest_dir> [-hvas]" % arg
+    print "Usage: python %s -i <source_dir> -o <dest_dir> [-hvasfp]" % arg
     print " -h: this usage screen"
     print " -v: be verbose"
     print " -a: match all image files"
     print " -s: minimum file size in KB"
+    print " -f: perform facial detection"
+    print " -p: perform HoG pedestrian detection"
     print
     print "e.g.:"
     print "python dcim_finder.py -i test -o test1 -s 200 -v"
     sys.exit(1)
 
+def face_detect(image,img_name):
+    cascade = cv2.CascadeClassifier(casc_classifier)
+    img = cv2.imread(image)
+    rects = cascade.detectMultiScale(image,1.3,4,cv2.cv.CV_HAAR_SCALE_IMAGE,(20,20))
+    if len(rects) == 0:
+        return False
+
+    rects[:, 2:] += rects[:, :2]
+
+    # highlight the faces in the image
+    for x1,y1,x2,y2 in rects:
+        cv2.rectangle(image,(x1,y1),(x2,y2),(127,255,0),2)
+
+    cv2.imwrite("%s/%s-facedetected" % (faces_directory,image_name),image)
+    return True
+
 try:
-    opts, args = getopt.getopt(sys.argv[1:],"ahvsi:o:")
+    opts, args = getopt.getopt(sys.argv[1:],"fpahvsi:o:")
 except getopt.GetoptError:
     usage(sys.argv[0])
 for opt, arg in opts:
@@ -47,6 +70,10 @@ for opt, arg in opts:
         min_size = arg
     elif opt == '-a':
         match_all_images = True
+    elif opt == '-f':
+        face_detect = True
+    elif opt == '-p':
+        pedestrian_detect = True
     elif opt == '-h':
         usage(sys.argv[0])
 
@@ -131,4 +158,7 @@ print
 
 for f in fileList:
     print "Copying: %s " % f
+    image_name = re.match(r'\/(.*?\.[a-z]{3})',f,r.M|r.I).group(1)
     shutil.copy2(f,dest_dir)
+    if face_detect:
+        face_detect(f,image_name)
