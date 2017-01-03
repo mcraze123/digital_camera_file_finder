@@ -32,7 +32,7 @@ def usage(arg):
     print " -a: match all image files"
     print " -s: minimum file size in KB"
     print " -f: perform facial detection"
-    print " -p: perform HoG pedestrian detection"
+    print " -p: perform HoG pedestrian detection (not implemented yet)"
     print
     print "e.g.:"
     print "python dcim_finder.py -i test -o test1 -s 200 -v"
@@ -125,11 +125,14 @@ smart_regexs = [
 ]
 
 match_all_regexs = [
-    r'.*\.jpg',
-    r'.*\.png',
-    r'.*\.mov',
-    r'.*\.mp4',
-    r'.*\.3gp'
+    r'.*?\.jpg',
+    r'.*?\.jpeg',
+    r'.*?\.png',
+    r'.*?\.tif',
+    r'.*?\.tiff',
+    r'.*?\.mov',
+    r'.*?\.mp4',
+    r'.*?\.3gp'
 ]
 
 for root, subFolders, files in os.walk(src_dir):
