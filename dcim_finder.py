@@ -161,7 +161,7 @@ print
 
 for f in fileList:
     print "Copying: %s " % f
-    image_name = re.match(r'\/(.*?\.[a-z]{3})',f,r.M|r.I).group(1)
+    image_name = re.match(r'\/(.*?\.[a-z]{3,4})',f,r.M|r.I).group(1)
     shutil.copy2(f,dest_dir)
     if face_detect:
         face_detect(f,image_name)
